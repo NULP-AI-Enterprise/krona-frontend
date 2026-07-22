@@ -1,0 +1,44 @@
+.sidebar-container {
+    width: 118px;
+    background-color: var(--color-bg-main, #bbc191);
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 24px;
+    box-sizing: border-box;
+}
+
+.sidebar-btn {
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 0;
+
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.sidebar-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-btn img {
+    width: 78px; 
+    height: 78px
+}
+
+.sidebar-btn:active {
+    transform: scale(0.95);
+}

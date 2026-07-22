@@ -1,0 +1,101 @@
+/* Main container */
+.corpus-manager-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #5A3E29;
+}
+
+/* Button panel */
+.cm-control-panel {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Buttons */
+.cm-button {
+    padding: 8px 12px;
+    margin-right: 5px;
+    cursor: pointer;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: #333;
+}
+
+/* Form */
+.cm-form {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-width: 500px;
+    background-color: var(--color-bg-main);
+}
+
+/* Group of fields */
+.cm-input-group {
+    margin-bottom: 10px;
+    display: block;
+}
+
+.cm-input-group label {
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+/* Input field */
+.cm-input-field {
+    display: block;
+    width: 100%;
+    padding: 6px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* Lists */
+.cm-tree-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.cm-list-item {
+    margin-bottom: 10px;
+}
+
+/* Nested list */
+.cm-sub-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-left: 20px;
+}
+
+/* Text styles */
+.cm-meta-info {
+    font-size: 0.8em;
+    color: #555;
+    margin-left: 10px;
+}
+
+.cm-description {
+    color: #444;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+.cm-author {
+    color: #555;
+    font-style: italic;
+}
+
+.cm-error {
+    color: red;
+}

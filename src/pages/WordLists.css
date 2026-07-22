@@ -1,0 +1,152 @@
+/* Filter panel */
+.wl-filter-paper {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    padding: 20px;
+    margin: 8px 0px 32px 0px;
+    background-color: var(--color-bg-main) !important;
+
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.search-controls {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Search button */
+.wl-search-button {
+    height: 56px;
+    background-color: var(--color-text-main) !important;
+    color: var(--color-bg-light) !important;
+}
+
+.wl-search-button:hover {
+    background-color: var(--color-btn-hover) !important;
+}
+
+/* Loading indicator */
+.wl-loading {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.wl-table-container {
+    overflow: hidden;
+    width: 100%;
+    border: 2px solid var(--color-text-main) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.wl-table-head {
+    background-color: var(--color-bg-light) !important;
+}
+
+.wl-head-cell {
+    background-color: var(--color-bg-light) !important;
+    color: var(--color-text-main) !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid var(--color-text-main) !important;
+    border-right: 1px solid var(--color-text-main) !important;
+    padding: 10px !important;
+}
+
+.wl-head-cell:last-child {
+    border-right: none !important;
+}
+
+.wl-table-row {
+    background-color: var(--color-bg-light) !important;
+}
+
+.wl-table-row:hover {
+    background-color: var(--color-row-hover) !important;
+}
+
+.wl-table-row .MuiTableCell-root {
+    color: var(--color-text-main) !important;
+    border-bottom: 1px solid var(--color-text-main) !important;
+    border-right: 1px solid var(--color-text-main) !important;
+    font-size: 0.95rem !important;
+    padding: 8px 12px !important;
+}
+
+.wl-table-row .MuiTableCell-root:last-child {
+    border-right: none !important;
+}
+
+/* Specific Cells */
+.wl-cell-index {
+    color: var(--color-text-main) !important;
+    text-align: center;
+}
+
+.wl-cell-word {
+    font-weight: 700 !important;
+    color: var(--color-accent-green) !important;
+}
+
+.wl-cell-count {
+    color: var(--color-text-main) !important;
+}
+
+/* Progress bar */
+.wl-progress-box {
+    display: flex;
+    align-items: center;
+}
+
+.wl-progress-wrapper {
+    width: 100%;
+    margin-right: 8px;
+}
+
+.wl-progress-bar {
+    height: 8px !important;
+    border-radius: 5px !important;
+}
+
+/* Empty message */
+.wl-empty-message {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    color: gray !important;
+    border-right: none !important;
+}
+
+html {
+    scrollbar-gutter: stable;
+}
+
+.custom-pagination-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 0;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.pagination-text-box {
+    border-bottom: 2px solid var(--color-text-main);
+    padding: 0 10px;
+    color: var(--color-text-main);
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.pagination-total-text {
+    font-size: 1rem;
+    color: var(--color-text-main);
+}
+
+.pagination-icon {
+    height: 20px;
+    transition: opacity 0.2s;
+}
+
+.pagination-icon.disabled {
+    opacity: 0.3;
+}
