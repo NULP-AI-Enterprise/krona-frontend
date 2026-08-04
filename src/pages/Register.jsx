@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 import './Register.css';
 
 const Register = () => {
@@ -34,12 +35,25 @@ const Register = () => {
             return;
         }
 
+        let cleanedPhone = formData.phone_number.trim().replace(/[\s\(\)\-]/g, '');
+        if (cleanedPhone.startsWith('0') && cleanedPhone.length === 10) {
+            cleanedPhone = '+38' + cleanedPhone;
+        } else if (cleanedPhone.startsWith('380') && cleanedPhone.length === 12) {
+            cleanedPhone = '+' + cleanedPhone;
+        }
+
+        if (!/^\+\d{10,14}$/.test(cleanedPhone)) {
+            setErrorMsg("Введіть коректний номер телефону у форматі +380XXXXXXXXX або 0XXXXXXXXX");
+            return;
+        }
+
         setIsLoading(true);
 
         try {
             const { confirmPassword, ...dataToSend } = formData;
+            dataToSend.phone_number = cleanedPhone;
 
-            const response = await fetch('http://localhost:8000/api/auth/register/', {
+            const response = await fetch(`${API_URL}/api/auth/register/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -54,10 +68,11 @@ const Register = () => {
                 if (data.access && data.refresh) {
                     localStorage.setItem('access_token', data.access);
                     localStorage.setItem('refresh_token', data.refresh);
+                    localStorage.setItem('user_id', data.user_id);
                     localStorage.setItem('user_full_name', data.user_full_name);
                     localStorage.setItem('user_email', data.user_email);
                     localStorage.setItem('user_role', data.user_role);
-
+                    localStorage.setItem('user_phone_number', data.user_phone_number)
                     localStorage.removeItem('concordance_selected_collection');
                 }
 
@@ -122,10 +137,14 @@ const Register = () => {
                             type="tel"
                             name="phone_number" 
                             className="form-control"
+                            placeholder="+380XXXXXXXXX"
                             value={formData.phone_number}
                             onChange={handleChange}
                             required
                         />
+                        <small style={{ color: '#666', display: 'block', marginTop: '4px', fontSize: '0.82rem' }}>
+                            Шаблон: +380XXXXXXXXX або 0XXXXXXXXX
+                        </small>
                     </div>
 
                     <div className="form-group">

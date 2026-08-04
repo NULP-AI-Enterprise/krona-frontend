@@ -1,0 +1,37 @@
+.edit-form-label {
+    display: block;
+    color: var(--color-accent-green);
+    font-size: 14px;
+    font-family: 'Georgia', serif;
+    /* margin-bottom: -5px; */
+    padding-left : 5px;
+}
+
+.edit-form-link {
+    color: var(--color-addittional-text);
+    font-size: 12px;
+    justify-self: end;
+    margin: 0px;
+}
+
+.edit-form-link:hover {
+    color: var(--color-btn-hover);
+}
+
+.edit-form-control {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--color-addittional-text);
+    color: var(--color-text-main);
+    padding: 4px 5px;
+    font-size: 1rem;
+    font-family: 'Georgia', serif;
+    border-radius: 5px;
+    box-sizing: border-box;
+    outline: none;
+    margin-bottom: 3px;
+}
+  
+.edit-form-control:focus {
+    background-color: rgba(255, 255, 255, 0.4);
+}

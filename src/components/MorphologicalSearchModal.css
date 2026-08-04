@@ -1,0 +1,117 @@
+.morph-modal-paper.MuiPaper-root {
+    background-color: #f7f3eb;
+    border-radius: 8px;
+    max-height: 85vh;
+}
+
+.morph-modal-content.MuiDialogContent-root {
+    padding: 32px;
+    background-color: #f7f3eb;
+}
+
+.morph-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.morph-modal-title.MuiTypography-root {
+    font-family: 'Georgia', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #4a3b2a;
+}
+
+.morph-submit-btn.MuiButton-root {
+    background-color: #6f7f3f;
+    color: #fff;
+    font-weight: 700;
+    font-family: inherit;
+    text-transform: none;
+    font-size: 0.95rem;
+    padding: 8px 24px;
+    border-radius: 6px;
+}
+
+.morph-submit-btn.MuiButton-root:hover {
+    background-color: #5c6a34;
+}
+
+.morph-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px 32px;
+}
+
+.morph-group {
+    min-width: 0;
+}
+
+.morph-group--disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.morph-group__title.MuiTypography-root {
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #4a3b2a;
+    margin-bottom: 6px;
+}
+
+.morph-group__checkboxes.MuiFormGroup-root {
+    gap: 0;
+}
+
+.morph-checkbox-label.MuiFormControlLabel-root {
+    margin-left: -4px;
+    margin-right: 0;
+}
+
+.morph-checkbox-label .MuiFormControlLabel-label {
+    font-family: inherit;
+    font-size: 0.88rem;
+    color: #4a3b2a;
+}
+
+.morph-checkbox.MuiCheckbox-root {
+    padding: 3px 6px;
+    color: #6f7f3f;
+}
+
+.morph-checkbox.MuiCheckbox-root.Mui-checked {
+    color: #6f7f3f;
+}
+
+.morph-checkbox.MuiCheckbox-root.Mui-disabled {
+    color: #b0b0b0;
+}
+
+.morph-group--disabled .morph-checkbox-label .MuiFormControlLabel-label {
+    color: #999;
+}
+
+@media (max-width: 900px) {
+    .morph-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .morph-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 16px;
+    }
+
+    .morph-modal-content.MuiDialogContent-root {
+        padding: 16px;
+    }
+
+    .morph-modal-title.MuiTypography-root {
+        font-size: 1.2rem;
+    }
+}

@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 
 import './WordLists.css';
+import { API_URL } from '../config';
 
 import {
     fetchCorporaStart,
@@ -78,7 +79,7 @@ const WordLists = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:8000/word-list/', {
+            const response = await fetch(`${API_URL}/word-list/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

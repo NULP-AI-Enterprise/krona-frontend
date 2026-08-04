@@ -23,6 +23,14 @@ const initialState = {
 
     isDeletingText: false,
     deleteTextError: null,
+
+    subcorpora: [],
+    isSubcorporaLoading: false,
+    subcorporaError: null,
+    selectedCorpusId: null,
+
+    isDeletingSubcorpus: false,
+    deleteSubcorpusError: null,
 };
 
 const adminSlice = createSlice({
@@ -115,6 +123,36 @@ const adminSlice = createSlice({
             state.deleteTextError = action.payload;
         },
 
+        selectCorpusForSubcorpora: (state, action) => {
+            state.selectedCorpusId = action.payload;
+            state.subcorpora = [];
+        },
+
+        fetchSubcorporaStart: (state) => {
+            state.isSubcorporaLoading = true;
+            state.subcorporaError = null;
+        },
+        fetchSubcorporaSuccess: (state, action) => {
+            state.subcorpora = action.payload;
+            state.isSubcorporaLoading = false;
+        },
+        fetchSubcorporaFailure: (state, action) => {
+            state.isSubcorporaLoading = false;
+            state.subcorporaError = action.payload;
+        },
+
+        deleteSubcorpusStart: (state) => {
+            state.isDeletingSubcorpus = true;
+            state.deleteSubcorpusError = null;
+        },
+        deleteSubcorpusSuccess: (state) => {
+            state.isDeletingSubcorpus = false;
+        },
+        deleteSubcorpusFailure: (state, action) => {
+            state.isDeletingSubcorpus = false;
+            state.deleteSubcorpusError = action.payload;
+        },
+
         clearAdminErrors: (state) => {
             state.usersError = null;
             state.createUserError = null;
@@ -123,6 +161,8 @@ const adminSlice = createSlice({
             state.corporaError = null;
             state.deleteCorpusError = null;
             state.deleteTextError = null;
+            state.subcorporaError = null;
+            state.deleteSubcorpusError = null;
         },
     }
 });
@@ -135,6 +175,9 @@ export const {
     fetchAdminCorporaStart, fetchAdminCorporaSuccess, fetchAdminCorporaFailure,
     deleteCorpusStart, deleteCorpusSuccess, deleteCorpusFailure,
     deleteTextStart, deleteTextSuccess, deleteTextFailure,
+    selectCorpusForSubcorpora,
+    fetchSubcorporaStart, fetchSubcorporaSuccess, fetchSubcorporaFailure,
+    deleteSubcorpusStart, deleteSubcorpusSuccess, deleteSubcorpusFailure,
     clearAdminErrors,
 } = adminSlice.actions;
 

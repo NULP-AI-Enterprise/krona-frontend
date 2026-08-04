@@ -42,10 +42,12 @@ const initialState = {
     // --- CORPUS CREATION STATE ---
     isCreatingCorpus: false,
     createCorpusError: null,
+    isCorpusCreated: false,
 
     // --- SUBCORPUS CREATION STATE ---
     isCreatingSubcorpus: false,
     createSubcorpusError: null,
+    isSubcorpusCreated: false,
 
     // --- TEXT CREATION STATE ---
     isCreatingText: false,
@@ -55,15 +57,22 @@ const initialState = {
     // --- USER SUBCORPUS CREATION STATE ---
     isCreatingUserSubcorpus: false,
     createUserSubcorpusError: null,
+    isUserSubcorpusCreated: false,
 
     // --- DELETE STATE ---
     isDeletingNode: false,
     deleteNodeError: null,
+    isNodeDeleted: false,
 
     // --- TEXTS LIST STATE ---
     textsList: [],
     isTextsLoading: false,
     textsError: null,
+    collectionInfo: null,
+
+    // --- DELETE TEXT STATE ---
+    isDeletingText: false,
+    deleteTextError: null,
 };
 
 const corpusSlice = createSlice({
@@ -111,28 +120,40 @@ const corpusSlice = createSlice({
         createFilteredSubcorpusStart: (state, action) => {
             state.isCreatingSubcorpus = true;
             state.createSubcorpusError = null;
+            state.isSubcorpusCreated = false;
         },
         createFilteredSubcorpusSuccess: (state) => {
             state.isCreatingSubcorpus = false;
+            state.isSubcorpusCreated = true;
             const currentCorpusId = state.activeFilters.targetCorpusId;
             state.activeFilters = { ...initialState.activeFilters, targetCorpusId: currentCorpusId };
         },
         createFilteredSubcorpusFailure: (state, action) => {
             state.isCreatingSubcorpus = false;
             state.createSubcorpusError = action.payload;
+            state.isSubcorpusCreated = false;
+        },
+        resetSubcorpusCreated: (state) => {
+            state.isSubcorpusCreated = false;
         },
 
         // 5. Create corpus
         createCorpusStart: (state, action) => {
             state.isCreatingCorpus = true;
             state.createCorpusError = null;
+            state.isCorpusCreated = false;
         },
         createCorpusSuccess: (state) => {
             state.isCreatingCorpus = false;
+            state.isCorpusCreated = true;
         },
         createCorpusFailure: (state, action) => {
             state.isCreatingCorpus = false;
             state.createCorpusError = action.payload;
+            state.isCorpusCreated = false;
+        },
+        resetCorpusCreated: (state) => {
+            state.isCorpusCreated = false;
         },
 
         // 6. Create text
@@ -171,26 +192,38 @@ const corpusSlice = createSlice({
         createUserSubcorpusStart: (state, action) => {
             state.isCreatingUserSubcorpus = true;
             state.createUserSubcorpusError = null;
+            state.isUserSubcorpusCreated = false;
         },
         createUserSubcorpusSuccess: (state) => {
             state.isCreatingUserSubcorpus = false;
+            state.isUserSubcorpusCreated = true;
         },
         createUserSubcorpusFailure: (state, action) => {
             state.isCreatingUserSubcorpus = false;
             state.createUserSubcorpusError = action.payload;
+            state.isUserSubcorpusCreated = false;
+        },
+        resetUserSubcorpusCreated: (state) => {
+            state.isUserSubcorpusCreated = false;
         },
 
         // 9. Delete Node (Corpus/Subcorpus)
         deleteNodeStart: (state, action) => {
             state.isDeletingNode = true;
             state.deleteNodeError = null;
+            state.isNodeDeleted = false;
         },
         deleteNodeSuccess: (state) => {
             state.isDeletingNode = false;
+            state.isNodeDeleted = true;
         },
         deleteNodeFailure: (state, action) => {
             state.isDeletingNode = false;
             state.deleteNodeError = action.payload;
+            state.isNodeDeleted = false;
+        },
+        resetNodeDeleted: (state) => {
+            state.isNodeDeleted = false;
         },
 
         // 10. Fetch Texts
@@ -200,7 +233,8 @@ const corpusSlice = createSlice({
         },
         fetchTextsSuccess: (state, action) => {
             state.isTextsLoading = false;
-            state.textsList = action.payload;
+            state.textsList = action.payload.texts;
+            state.collectionInfo = action.payload.collectionInfo;
         },
         fetchTextsFailure: (state, action) => {
             state.isTextsLoading = false;
@@ -208,6 +242,21 @@ const corpusSlice = createSlice({
         },
         clearTextsList: (state) => {
             state.textsList = [];
+            state.collectionInfo = null;
+        },
+
+        // Delete Text
+        deleteTextStart: (state) => {
+            state.isDeletingText = true;
+            state.deleteTextError = null;
+        },
+        deleteTextSuccess: (state, action) => {
+            state.isDeletingText = false;
+            state.textsList = state.textsList.filter(text => text.id !== action.payload);
+        },
+        deleteTextFailure: (state, action) => {
+            state.isDeletingText = false;
+            state.deleteTextError = action.payload;
         },
 
     }
@@ -217,12 +266,14 @@ export const {
     fetchCorporaListStart, fetchCorporaListSuccess, fetchCorporaListFailure,
     fetchMetadataOptionsStart, fetchMetadataOptionsSuccess, fetchMetadataOptionsFailure,
     setFilterValue, clearFilters,
-    createFilteredSubcorpusStart, createFilteredSubcorpusSuccess, createFilteredSubcorpusFailure,
-    createCorpusStart, createCorpusSuccess, createCorpusFailure, createTextStart, createTextSuccess, createTextFailure,
+    createFilteredSubcorpusStart, createFilteredSubcorpusSuccess, createFilteredSubcorpusFailure, resetSubcorpusCreated,
+    createCorpusStart, createCorpusSuccess, createCorpusFailure, resetCorpusCreated,
+    createTextStart, createTextSuccess, createTextFailure, resetTextCreated,
     fetchTextMetadataOptionsStart, fetchTextMetadataOptionsSuccess, fetchTextMetadataOptionsFailure,
-    createUserSubcorpusStart, createUserSubcorpusSuccess, createUserSubcorpusFailure,
-    deleteNodeStart, deleteNodeSuccess, deleteNodeFailure,
-    fetchTextsStart, fetchTextsSuccess, fetchTextsFailure, clearTextsList, resetTextCreated
+    createUserSubcorpusStart, createUserSubcorpusSuccess, createUserSubcorpusFailure, resetUserSubcorpusCreated,
+    deleteNodeStart, deleteNodeSuccess, deleteNodeFailure, resetNodeDeleted,
+    fetchTextsStart, fetchTextsSuccess, fetchTextsFailure, clearTextsList,
+    deleteTextStart, deleteTextSuccess, deleteTextFailure,
 } = corpusSlice.actions;
 
 export default corpusSlice.reducer;

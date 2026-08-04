@@ -9,9 +9,12 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
     fetchUsersStart, createUserStart, updateUserRoleStart,
     deleteUserStart, fetchAdminCorporaStart, deleteCorpusStart,
+    fetchSubcorporaStart, deleteSubcorpusStart, selectCorpusForSubcorpora,
     clearAdminErrors,
 } from '../store/admin/adminSlice';
 
@@ -38,6 +41,8 @@ const AdminPanel = () => {
         updateUserError, deleteUserError,
         corpora, isCorporaLoading, corporaError,
         deleteCorpusError,
+        subcorpora, isSubcorporaLoading, subcorporaError,
+        selectedCorpusId, deleteSubcorpusError,
     } = useSelector((state) => state.admin);
 
     const [tab, setTab] = useState(0);
@@ -47,8 +52,11 @@ const AdminPanel = () => {
     const [usersRowsPerPage, setUsersRowsPerPage] = useState(10);
     const [corporaPage, setCorporaPage] = useState(0);
     const [corporaRowsPerPage, setCorporaRowsPerPage] = useState(10);
+    const [subcorporaPage, setSubcorporaPage] = useState(0);
+    const [subcorporaRowsPerPage, setSubcorporaRowsPerPage] = useState(10);
 
     const currentUserRole = localStorage.getItem('user_role');
+    const currentUserId = parseInt(localStorage.getItem('user_id'));
     const isAuthorized = ['SUPER_ADMIN', 'ADMIN'].includes(currentUserRole);
 
     useEffect(() => {
@@ -79,6 +87,24 @@ const AdminPanel = () => {
         return ROLES.filter(r => !['SUPER_ADMIN', 'ADMIN'].includes(r.value));
     };
 
+    const canDeleteCorpus = (corpus) => {
+        if (currentUserRole === 'SUPER_ADMIN') return true;
+        if (currentUserRole === 'ADMIN') {
+            if (corpus.creator_id === currentUserId) return true;
+            return ['USER', 'COMPILER'].includes(corpus.creator_role);
+        }
+        return false;
+    };
+
+    const canDeleteSubcorpus = (subcorpus) => {
+        if (currentUserRole === 'SUPER_ADMIN') return true;
+        if (currentUserRole === 'ADMIN') {
+            if (subcorpus.creator_id === currentUserId) return true;
+            return ['USER', 'COMPILER'].includes(subcorpus.creator_role);
+        }
+        return false;
+    };
+
     const handleCreateUser = () => {
         dispatch(createUserStart(newUser));
         setCreateDialogOpen(false);
@@ -101,7 +127,26 @@ const AdminPanel = () => {
         }
     };
 
-    const errorMsg = usersError || createUserError || updateUserError || deleteUserError || corporaError || deleteCorpusError;
+    const handleSelectCorpus = (corpusId) => {
+        dispatch(selectCorpusForSubcorpora(corpusId));
+        dispatch(fetchSubcorporaStart(corpusId));
+        setSubcorporaPage(0);
+    };
+
+    const handleBackToCorpora = () => {
+        dispatch(selectCorpusForSubcorpora(null));
+    };
+
+    const handleDeleteSubcorpus = (subcorpusId, subcorpusName) => {
+        if (window.confirm(`Видалити підкорпус "${subcorpusName}"?`)) {
+            dispatch(deleteSubcorpusStart({ subcorpusId, corpusId: selectedCorpusId }));
+        }
+    };
+
+    const errorMsg = usersError || createUserError || updateUserError || deleteUserError
+        || corporaError || deleteCorpusError || subcorporaError || deleteSubcorpusError;
+
+    const selectedCorpusName = corpora.find(c => c.id === selectedCorpusId)?.name;
 
     return (
         <Box sx={{ p: 3, bgcolor: colors.bgMain, minHeight: '80vh' }}>
@@ -279,56 +324,138 @@ const AdminPanel = () => {
             {/* CONTENT TAB */}
             {tab === 1 && (
                 <Box>
-                    {isCorporaLoading ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                            <CircularProgress sx={{ color: colors.accent }} />
-                        </Box>
-                    ) : (
-                        <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow sx={{ bgcolor: colors.bgSecondary }}>
-                                        <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Назва</TableCell>
-                                        <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Тип</TableCell>
-                                        <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Мова</TableCell>
-                                        <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Автор</TableCell>
-                                        <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Текстів</TableCell>
-                                        <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Дії</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {corpora
-                                        .slice(corporaPage * corporaRowsPerPage, corporaPage * corporaRowsPerPage + corporaRowsPerPage)
-                                        .map((corpus) => (
-                                            <TableRow key={corpus.id} hover>
-                                                <TableCell>{corpus.name}</TableCell>
-                                                <TableCell>{corpus.type}</TableCell>
-                                                <TableCell>{corpus.language}</TableCell>
-                                                <TableCell>{corpus.creator_name || '—'}</TableCell>
-                                                <TableCell>{corpus.text_count}</TableCell>
-                                                <TableCell>
-                                                    <IconButton
-                                                        onClick={() => handleDeleteCorpus(corpus.id, corpus.name)}
-                                                        sx={{ color: '#d32f2f' }}
-                                                    >
-                                                        <DeleteIcon />
-                                                    </IconButton>
-                                                </TableCell>
+                    {!selectedCorpusId ? (
+                        /* CORPORA LIST */
+                        <>
+                            {isCorporaLoading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                    <CircularProgress sx={{ color: colors.accent }} />
+                                </Box>
+                            ) : (
+                                <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow sx={{ bgcolor: colors.bgSecondary }}>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Назва</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Тип</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Мова</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Автор</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Email</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Текстів</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Дії</TableCell>
                                             </TableRow>
-                                        ))}
-                                </TableBody>
-                            </Table>
-                            <TablePagination
-                                component="div"
-                                count={corpora.length}
-                                page={corporaPage}
-                                onPageChange={(_, newPage) => setCorporaPage(newPage)}
-                                rowsPerPage={corporaRowsPerPage}
-                                onRowsPerPageChange={(e) => { setCorporaRowsPerPage(parseInt(e.target.value, 10)); setCorporaPage(0); }}
-                                rowsPerPageOptions={[10, 25, 50]}
-                                labelRowsPerPage="Рядків на сторінці:"
-                            />
-                        </TableContainer>
+                                        </TableHead>
+                                        <TableBody>
+                                            {corpora
+                                                .slice(corporaPage * corporaRowsPerPage, corporaPage * corporaRowsPerPage + corporaRowsPerPage)
+                                                .map((corpus) => (
+                                                    <TableRow key={corpus.id} hover>
+                                                        <TableCell>{corpus.name}</TableCell>
+                                                        <TableCell>{corpus.type}</TableCell>
+                                                        <TableCell>{corpus.language}</TableCell>
+                                                        <TableCell>{corpus.creator_name || '—'}</TableCell>
+                                                        <TableCell>{corpus.creator_email || '—'}</TableCell>
+                                                        <TableCell>{corpus.text_count}</TableCell>
+                                                        <TableCell>
+                                                            <IconButton
+                                                                onClick={() => handleSelectCorpus(corpus.id)}
+                                                                sx={{ color: colors.accent }}
+                                                                title="Переглянути підкорпуси"
+                                                            >
+                                                                <FolderOpenIcon />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                onClick={() => handleDeleteCorpus(corpus.id, corpus.name)}
+                                                                disabled={!canDeleteCorpus(corpus)}
+                                                                sx={{ color: canDeleteCorpus(corpus) ? '#d32f2f' : '#ccc' }}
+                                                                title="Видалити корпус"
+                                                            >
+                                                                <DeleteIcon />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                        </TableBody>
+                                    </Table>
+                                    <TablePagination
+                                        component="div"
+                                        count={corpora.length}
+                                        page={corporaPage}
+                                        onPageChange={(_, newPage) => setCorporaPage(newPage)}
+                                        rowsPerPage={corporaRowsPerPage}
+                                        onRowsPerPageChange={(e) => { setCorporaRowsPerPage(parseInt(e.target.value, 10)); setCorporaPage(0); }}
+                                        rowsPerPageOptions={[10, 25, 50]}
+                                        labelRowsPerPage="Рядків на сторінці:"
+                                    />
+                                </TableContainer>
+                            )}
+                        </>
+                    ) : (
+                        /* SUBCORPORA LIST FOR SELECTED CORPUS */
+                        <>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                                <IconButton onClick={handleBackToCorpora} sx={{ color: colors.textBrown }}>
+                                    <ArrowBackIcon />
+                                </IconButton>
+                                <Typography variant="h6" sx={{ color: colors.textBrown }}>
+                                    Підкорпуси корпусу "{selectedCorpusName}"
+                                </Typography>
+                            </Box>
+
+                            {isSubcorporaLoading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                    <CircularProgress sx={{ color: colors.accent }} />
+                                </Box>
+                            ) : subcorpora.length === 0 ? (
+                                <Typography sx={{ color: colors.textBrown, py: 4, textAlign: 'center' }}>
+                                    У цьому корпусі немає підкорпусів
+                                </Typography>
+                            ) : (
+                                <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow sx={{ bgcolor: colors.bgSecondary }}>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Назва</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Автор</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Email</TableCell>
+                                                <TableCell sx={{ color: colors.textBrown, fontWeight: 600 }}>Дії</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {subcorpora
+                                                .slice(subcorporaPage * subcorporaRowsPerPage, subcorporaPage * subcorporaRowsPerPage + subcorporaRowsPerPage)
+                                                .map((subcorpus) => (
+                                                    <TableRow key={subcorpus.id} hover>
+                                                        <TableCell>{subcorpus.name}</TableCell>
+                                                        <TableCell>{subcorpus.creator_name || '—'}</TableCell>
+                                                        <TableCell>{subcorpus.creator_email || '—'}</TableCell>
+                                                        <TableCell>
+                                                            <IconButton
+                                                                onClick={() => handleDeleteSubcorpus(subcorpus.id, subcorpus.name)}
+                                                                disabled={!canDeleteSubcorpus(subcorpus)}
+                                                                sx={{ color: canDeleteSubcorpus(subcorpus) ? '#d32f2f' : '#ccc' }}
+                                                                title="Видалити підкорпус"
+                                                            >
+                                                                <DeleteIcon />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                        </TableBody>
+                                    </Table>
+                                    <TablePagination
+                                        component="div"
+                                        count={subcorpora.length}
+                                        page={subcorporaPage}
+                                        onPageChange={(_, newPage) => setSubcorporaPage(newPage)}
+                                        rowsPerPage={subcorporaRowsPerPage}
+                                        onRowsPerPageChange={(e) => { setSubcorporaRowsPerPage(parseInt(e.target.value, 10)); setSubcorporaPage(0); }}
+                                        rowsPerPageOptions={[10, 25, 50]}
+                                        labelRowsPerPage="Рядків на сторінці:"
+                                    />
+                                </TableContainer>
+                            )}
+                        </>
                     )}
                 </Box>
             )}

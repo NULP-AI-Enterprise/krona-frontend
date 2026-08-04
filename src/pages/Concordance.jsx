@@ -1,17 +1,17 @@
-import { useEffect} from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './Concordance.css';
 
 import {
     setQuery, setSearchType, setLeftContextSize, setRightContextSize,
-    searchStart, fetchCorporaStart
+    searchStart, fetchCorporaStart, exportStart, exportFailure
 } from '../store/concordance/concordanceSlice';
 
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, IconButton, Card, CardContent, Typography, Box , Select, MenuItem,
   TextField, FormControl, Button,
-  ToggleButton, ToggleButtonGroup, Stack
+  ToggleButton, ToggleButtonGroup, Stack, CircularProgress, Snackbar, Alert
 } from '@mui/material';
 
 import DownloadIcon from '@mui/icons-material/Download';
@@ -19,6 +19,7 @@ import leftAllSkip from '../assets/images/left_all_skip.png';
 import left1Skip from '../assets/images/left_1_skip.png';
 import right1Skip from '../assets/images/right_1_skip.png';
 import rightAllSkip from '../assets/images/right_all_skip.png';
+import MorphologicalSearchModal from '../components/MorphologicalSearchModal';
 
 const Concordance = () => {
     const dispatch = useDispatch();
@@ -26,8 +27,11 @@ const Concordance = () => {
     const {
         query, searchType, results, error, loading,
         leftContextSize, rightContextSize, stats,
-        selected, corpora, pagination
+        selected, corpora, pagination,
+        exporting, exportError
     } = useSelector((state) => state.concordance);
+
+    const [morphModalOpen, setMorphModalOpen] = useState(false);
 
     const colors = {
         bgMain: 'var(--color-bg-light, #F0ECE1)',
@@ -69,27 +73,16 @@ const Concordance = () => {
     };
 
     const handleDownload = () => {
-        if (results.length === 0) return;
+        if (results.length === 0 || exporting) return;
 
-        const headers = ['Текст', 'Лівий контекст', 'KWIC', 'Правий контекст'];
-        const csvRows = results.map(res => [
-            `"${res.document_name || 'N/A'}"`,
-            `"${res.left_context.replace(/"/g, '""')}"`,
-            `"${res.searched_sentence.replace(/"/g, '""')}"`,
-            `"${res.right_context.replace(/"/g, '""')}"`
-        ].join(','));
-
-        const csvContent = "\uFEFF" + [headers.join(','), ...csvRows].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-
-        link.href = url;
-        link.setAttribute('download', `concordance_results_${query}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        dispatch(exportStart({
+            query,
+            searchType,
+            leftContextSize,
+            rightContextSize,
+            collectionId: selected.id,
+            collectionType: selected.type
+        }));
     };
 
     const handleInsertTag = (tag) => {
@@ -203,12 +196,12 @@ const Concordance = () => {
                                     />
                                     <Box>
                                         <IconButton
-                                            title="Завантаження"
+                                            title="Завантажити всі результати"
                                             onClick={handleDownload}
-                                            disabled={results.length === 0}
-                                            style={{ paddingTop: '4px', opacity: results.length === 0 ? 0.5 : 1, cursor: results.length === 0 ? 'default' : 'pointer' }}
+                                            disabled={results.length === 0 || exporting}
+                                            style={{ paddingTop: '4px', opacity: (results.length === 0 || exporting) ? 0.5 : 1, cursor: (results.length === 0 || exporting) ? 'default' : 'pointer' }}
                                         >
-                                            <DownloadIcon  sx={{color : colors.textBrown, fontSize: 35}}/>
+                                            {exporting ? <CircularProgress size={24} sx={{color: colors.textBrown}} /> : <DownloadIcon sx={{color: colors.textBrown, fontSize: 35}}/>}
                                         </IconButton>
                                     </Box>
                                 </Box>
@@ -281,6 +274,23 @@ const Concordance = () => {
                                             }}
                                         >
                                             {"<Відст.>"}
+                                        </Button>
+
+                                        <Button
+                                            variant="contained"
+                                            size='small'
+                                            onClick={() => setMorphModalOpen(true)}
+                                            sx={{
+                                                fontFamily: 'inherit',
+                                                backgroundColor: colors.btnOutline,
+                                                color: '#fff',
+                                                '&:hover': {
+                                                    backgroundColor: colors.bgDrawerBtn,
+                                                    color: '#fff',
+                                                },
+                                            }}
+                                        >
+                                            Морфологія
                                         </Button>
 
                                     </Box>
@@ -515,6 +525,23 @@ const Concordance = () => {
                             </>
                         )}
                     </Box>
+
+            <MorphologicalSearchModal
+                open={morphModalOpen}
+                onClose={() => setMorphModalOpen(false)}
+                onSubmit={(cql) => dispatch(setQuery(query + cql))}
+            />
+
+            <Snackbar
+                open={!!exportError}
+                autoHideDuration={5000}
+                onClose={() => dispatch(exportFailure(null))}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert severity="error" onClose={() => dispatch(exportFailure(null))}>
+                    {exportError}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

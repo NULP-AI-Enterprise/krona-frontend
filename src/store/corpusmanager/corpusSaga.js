@@ -1,5 +1,5 @@
 import { takeLatest, put, call } from 'redux-saga/effects';
-import axios from 'axios';
+import api from '../../utils/api';
 import {
     fetchCorporaListStart, fetchCorporaListSuccess, fetchCorporaListFailure,
     fetchMetadataOptionsStart, fetchMetadataOptionsSuccess, fetchMetadataOptionsFailure,
@@ -9,60 +9,8 @@ import {
     createUserSubcorpusStart, createUserSubcorpusSuccess, createUserSubcorpusFailure,
     deleteNodeStart, deleteNodeSuccess, deleteNodeFailure,
     fetchTextsStart, fetchTextsSuccess, fetchTextsFailure,
+    deleteTextStart, deleteTextSuccess, deleteTextFailure,
 } from './corpusSlice';
-
-
-// Instance AXIOS
-const api = axios.create({
-    baseURL: 'http://localhost:8000/'
-});
-
-
-// Token interceptor
-api.interceptors.request.use((config) => {
-    // 'access_token'
-    const token = localStorage.getItem('access_token');
-
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-}, (error) => Promise.reject(error));
-
-
-// Interceptor for responses
-api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    async (error) => {
-        const originalRequest = error.config;
-
-        if (error.response.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
-            try {
-                const refreshToken = localStorage.getItem('refresh_token');
-
-                const response = await axios.post('http://localhost:8000/api/auth/token/refresh/', {
-                    refresh: refreshToken
-                });
-
-                localStorage.setItem('access_token', response.data.access);
-
-                originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
-                return api(originalRequest);
-
-            } catch (refreshError) {
-                console.error("Refresh token expired. Need to login again.");
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                return Promise.reject(refreshError);
-            }
-        }
-        return Promise.reject(error);
-    }
-);
 
 // --- API REQUESTS ---
 const apiCreateText = (formData) => api.post('text/', formData);
@@ -74,6 +22,7 @@ const apiCreateUserSubcorpus = (payload) => api.post('user-subcorpus/', payload)
 const apiDeleteCorpus = (id) => api.delete(`corpus/${id}/`);
 const apiDeleteFilteredSubcorpus = (id) => api.delete(`filtered-subcorpus/${id}/`);
 const apiDeleteUserSubcorpus = (id) => api.delete(`user-subcorpus/${id}/`);
+const apiDeleteText = (id) => api.delete(`text/${id}/`);
 
 const apiCreateFilteredSubcorpus = (payload) => {
     return api.post('filtered-subcorpus/', {
@@ -85,13 +34,28 @@ const apiCreateFilteredSubcorpus = (payload) => {
 
 const apiFetchTexts = (params) => api.get('text/list/', { params });
 
+const extractErrorMessage = (error, fallback) => {
+    if (error.response && error.response.data) {
+        const data = error.response.data;
+        if (typeof data === 'string') return data;
+        if (data.error) return data.error;
+        if (data.detail) return data.detail;
+        if (data.message) return data.message;
+        if (typeof data === 'object') {
+            const joined = Object.values(data).flat().map(val => (typeof val === 'object' ? JSON.stringify(val) : val)).join(' ');
+            if (joined) return joined;
+        }
+    }
+    return error.message || fallback;
+};
+
 // --- WORKER SAGAS ---
 function* workFetchCorporaList() {
     try {
         const response = yield call(apiFetchCorpora);
         yield put(fetchCorporaListSuccess(response.data));
     } catch (error) {
-        yield put(fetchCorporaListFailure(error.response?.data?.message || "Не вдалося завантажити корпуси"));
+        yield put(fetchCorporaListFailure(extractErrorMessage(error, "Не вдалося завантажити корпуси")));
     }
 }
 
@@ -100,7 +64,7 @@ function* workFetchTextMetadataOptions() {
         const response = yield call(apiFetchTextMetadataOptions);
         yield put(fetchTextMetadataOptionsSuccess(response.data));
     } catch (error) {
-        yield put(fetchTextMetadataOptionsFailure(error.message));
+        yield put(fetchTextMetadataOptionsFailure(extractErrorMessage(error, "Помилка завантаження опцій метаданих")));
     }
 }
 
@@ -111,7 +75,7 @@ function* workCreateCorpus(action) {
         yield put(fetchCorporaListStart());
         yield put(fetchTextMetadataOptionsStart());
     } catch (error) {
-        yield put(createCorpusFailure(error.response?.data?.message || "Не вдалося створити корпус"));
+        yield put(createCorpusFailure(extractErrorMessage(error, "Не вдалося створити корпус")));
     }
 }
 
@@ -121,7 +85,7 @@ function* workCreateText(action) {
         yield put(createTextSuccess());
         yield put(fetchCorporaListStart());
     } catch (error) {
-        yield put(createTextFailure(error.response?.data?.message || "Не вдалося завантажити текст"));
+        yield put(createTextFailure(extractErrorMessage(error, "Не вдалося завантажити текст")));
     }
 }
 
@@ -130,7 +94,7 @@ function* workFetchMetadataOptions(action) {
         const response = yield call(apiFetchMetadataOptions, action.payload);
         yield put(fetchMetadataOptionsSuccess(response.data));
     } catch (error) {
-        yield put(fetchMetadataOptionsFailure(error.message));
+        yield put(fetchMetadataOptionsFailure(extractErrorMessage(error, "Помилка завантаження метаданих")));
     }
 }
 
@@ -140,7 +104,7 @@ function* workCreateFilteredSubcorpus(action) {
         yield put(createFilteredSubcorpusSuccess());
         yield put(fetchCorporaListStart());
     } catch (error) {
-        yield put(createFilteredSubcorpusFailure(error.response?.data?.message || "Не вдалося створити підкорпус"));
+        yield put(createFilteredSubcorpusFailure(extractErrorMessage(error, "Не вдалося створити підкорпус")));
     }
 }
 
@@ -150,7 +114,7 @@ function* workCreateUserSubcorpus(action) {
         yield put(createUserSubcorpusSuccess());
         yield put(fetchCorporaListStart());
     } catch (error) {
-        yield put(createUserSubcorpusFailure(error.response?.data?.message || "Не вдалося створити користувацький підкорпус"));
+        yield put(createUserSubcorpusFailure(extractErrorMessage(error, "Не вдалося створити користувацький підкорпус")));
     }
 }
 
@@ -169,18 +133,32 @@ function* workDeleteNode(action) {
         yield put(deleteNodeSuccess());
         yield put(fetchCorporaListStart());
     } catch (error) {
-        yield put(deleteNodeFailure(error.response?.data?.message || "Не вдалося видалити елемент"));
+        yield put(deleteNodeFailure(extractErrorMessage(error, "Не вдалося видалити елемент")));
     }
 }
 
 function* workFetchTexts(action) {
     try {
         const response = yield call(apiFetchTexts, action.payload);
-        yield put(fetchTextsSuccess(response.data.texts));
+        yield put(fetchTextsSuccess({
+            texts: response.data.texts,
+            collectionInfo: response.data.collection_info || null
+        }));
     } catch (error) {
-        yield put(fetchTextsFailure(error.response?.data?.error || "Не вдалося завантажити тексти"));
+        yield put(fetchTextsFailure(extractErrorMessage(error, "Не вдалося завантажити тексти")));
     }
 }
+
+function* workDeleteText(action) {
+    const id = action.payload;
+    try {
+        yield call(apiDeleteText, id);
+        yield put(deleteTextSuccess(id));
+    } catch (error) {
+        yield put(deleteTextFailure(error.response?.data?.error || "Не вдалося видалити текст"));
+    }
+}
+
 // --- WATCHER SAGA ---
 export default function* corpusSaga() {
     yield takeLatest(fetchCorporaListStart.type, workFetchCorporaList);
@@ -192,4 +170,5 @@ export default function* corpusSaga() {
     yield takeLatest(createUserSubcorpusStart.type, workCreateUserSubcorpus);
     yield takeLatest(deleteNodeStart.type, workDeleteNode);
     yield takeLatest(fetchTextsStart.type, workFetchTexts);
+    yield takeLatest(deleteTextStart.type, workDeleteText);
 }

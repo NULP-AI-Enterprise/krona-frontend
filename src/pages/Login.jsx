@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 import './Register.css';
 
 const Login = () => {
@@ -23,7 +24,7 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/auth/login/', {
+            const response = await fetch(`${API_URL}/api/auth/login/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -34,10 +35,11 @@ const Login = () => {
             if (response.ok) {
                 localStorage.setItem('access_token', data.access);
                 localStorage.setItem('refresh_token', data.refresh);
+                localStorage.setItem('user_id', data.user_id);
                 localStorage.setItem('user_full_name', data.user_full_name);
                 localStorage.setItem('user_email', data.user_email);
                 localStorage.setItem('user_role', data.user_role);
-
+                localStorage.setItem('user_phone_number', data.user_phone_number)
                 localStorage.removeItem('concordance_selected_collection');
                 window.location.href = '/';
             } else {

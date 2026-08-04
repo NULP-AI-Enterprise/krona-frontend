@@ -1,28 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PersonIcon from '@mui/icons-material/Person';
 import './Header.css';
 
 const Header = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
+    const userRole = localStorage.getItem('user_role');
+    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(userRole);
 
     const goTo = (path) => {
         navigate(path);
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_full_name');
-        localStorage.removeItem('user_email');
-        localStorage.removeItem('user_role');
-
-        localStorage.removeItem('concordance_selected_collection');
-
-        setShowDropdown(false);
-        window.location.href = '/';
     };
 
     useEffect(() => {
@@ -62,21 +52,18 @@ const Header = () => {
 
                 {isLoggedIn ? (
                      !isAuthPage && (
-                        <div style={{ position: 'relative' }} ref={dropdownRef}>
-                            <button 
-                                className="image-button header-account-btn" 
-                                onClick={() => setShowDropdown(!showDropdown)}
-                            >
-                                <img src={'/src/assets/images/header/account_icon.png'} alt="Account icon" width={86} height={69}/>
-                            </button>
-                            
-                            {showDropdown && (
-                                <div className="dropdown-menu">
-                                    <button onClick={handleLogout} className="dropdown-item">
-                                        Вийти
-                                    </button>
-                                </div>
+                        <div style={{ position: 'relative'}}>
+                            {isAdmin && (
+                                <button className="header-adminpanel-btn"  onClick={() => goTo('/admin')}>
+                                    <AdminPanelSettingsIcon sx={{  fontSize: 50,  color: 'var(--color-bg-light, #F0ECE1)' }} />
+                                </button>
                             )}
+                            <button 
+                                className="header-account-btn" 
+                                onClick={() => goTo('user')}
+                            >
+                                <PersonIcon sx={{  fontSize: 70,  color: 'var(--color-bg-light, #F0ECE1)' }} />
+                            </button>
                         </div>
                      )
                 ) : (

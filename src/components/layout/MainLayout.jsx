@@ -7,7 +7,7 @@ import './MainLayout.css';
 const MainLayout = () => {
     const location = useLocation();
 
-    const hideSidebarRoutes = ['/', '/login', '/register'];
+    const hideSidebarRoutes = ['/', '/login', '/register', '/user'];
 
     const shouldShowSidebar = !hideSidebarRoutes.includes(location.pathname);
 

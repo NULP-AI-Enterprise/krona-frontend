@@ -42,6 +42,9 @@ const initialState = {
     loading: false,
     error: null,
 
+    exporting: false,
+    exportError: null,
+
     wlFieldToCount: 'tokens.form',
     wlPos: '',
     wlPatternText: '',
@@ -109,6 +112,18 @@ const concordanceSlice = createSlice({
             state.error = action.payload;
         },
 
+        exportStart: (state) => {
+            state.exporting = true;
+            state.exportError = null;
+        },
+        exportSuccess: (state) => {
+            state.exporting = false;
+        },
+        exportFailure: (state, action) => {
+            state.exporting = false;
+            state.exportError = action.payload;
+        },
+
         setWlFieldToCount: (state, action) => { state.wlFieldToCount = action.payload; },
         setWlPos: (state, action) => { state.wlPos = action.payload; },
         setWlPatternText: (state, action) => { state.wlPatternText = action.payload; },
@@ -125,6 +140,7 @@ export const {
     setQuery, setSearchType, setLeftContextSize, setRightContextSize,
     setSelected, fetchCorporaStart, fetchCorporaSuccess, fetchCorporaFailure,
     searchStart, searchSuccess, searchFailure,
+    exportStart, exportSuccess, exportFailure,
     setWlFieldToCount, setWlPos, setWlPatternText, setWlPatternMode,
     setWlResults, setWlSearchLoading, setWlHasSearched, setWlPage
 } = concordanceSlice.actions;

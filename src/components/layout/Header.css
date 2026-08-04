@@ -108,36 +108,18 @@
     margin-right: 10px;
     border: none;
     cursor: pointer;
-    padding: 0;
+    padding: 4px;
+}
+
+.header-adminpanel-btn {
+    background: transparent;
+    margin-right: 10px;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
 }
 .header-auth-mode {
     padding: 0 40px 0 0;
 }
 
 
-.dropdown-menu {
-    position: absolute;
-    top: 100%; 
-    right: 10px; 
-    margin-top: 8px; 
-    z-index: 1000; 
-}
-
-
-.dropdown-item {
-    background-color: #ffffff;
-    color: #5a3e29;
-    border-radius: 12px;
-    padding: 10px 30px; 
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    white-space: nowrap;
-}
-
-.dropdown-item:hover {
-    background-color: #f0ece1;
-    border-color: #40342B;
-    color: #40342B;
-}

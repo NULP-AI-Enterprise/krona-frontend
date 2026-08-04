@@ -1,5 +1,5 @@
 import { takeLatest, put, call } from 'redux-saga/effects';
-import axios from 'axios';
+import api from '../../utils/api';
 import {
     fetchUsersStart, fetchUsersSuccess, fetchUsersFailure,
     createUserStart, createUserSuccess, createUserFailure,
@@ -8,44 +8,9 @@ import {
     fetchAdminCorporaStart, fetchAdminCorporaSuccess, fetchAdminCorporaFailure,
     deleteCorpusStart, deleteCorpusSuccess, deleteCorpusFailure,
     deleteTextStart, deleteTextSuccess, deleteTextFailure,
+    fetchSubcorporaStart, fetchSubcorporaSuccess, fetchSubcorporaFailure,
+    deleteSubcorpusStart, deleteSubcorpusSuccess, deleteSubcorpusFailure,
 } from './adminSlice';
-
-
-const api = axios.create({
-    baseURL: 'http://localhost:8000/'
-});
-
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-}, (error) => Promise.reject(error));
-
-api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-            try {
-                const refreshToken = localStorage.getItem('refresh_token');
-                const response = await axios.post('http://localhost:8000/api/auth/token/refresh/', {
-                    refresh: refreshToken
-                });
-                localStorage.setItem('access_token', response.data.access);
-                originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
-                return api(originalRequest);
-            } catch (refreshError) {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                return Promise.reject(refreshError);
-            }
-        }
-        return Promise.reject(error);
-    }
-);
 
 // --- API REQUESTS ---
 const apiFetchUsers = (search) => api.get('api/auth/admin/users/', { params: search ? { search } : {} });
@@ -55,6 +20,8 @@ const apiDeleteUser = (id) => api.delete(`api/auth/admin/users/${id}/`);
 const apiFetchAdminCorpora = () => api.get('api/auth/admin/corpora/');
 const apiDeleteCorpus = (id) => api.delete(`api/auth/admin/corpora/${id}/`);
 const apiDeleteText = (id) => api.delete(`api/auth/admin/texts/${id}/`);
+const apiFetchSubcorpora = (corpusId) => api.get(`api/auth/admin/corpora/${corpusId}/subcorpora/`);
+const apiDeleteSubcorpus = (id) => api.delete(`api/auth/admin/subcorpora/${id}/`);
 
 // --- WORKER SAGAS ---
 function* workFetchUsers(action) {
@@ -82,6 +49,10 @@ function* workUpdateUserRole(action) {
     try {
         const { id, role } = action.payload;
         yield call(apiUpdateUserRole, id, role);
+        const currentUserId = parseInt(localStorage.getItem('user_id'));
+        if (id === currentUserId) {
+            localStorage.setItem('user_role', role);
+        }
         yield put(updateUserRoleSuccess());
         yield put(fetchUsersStart());
     } catch (error) {
@@ -128,6 +99,26 @@ function* workDeleteText(action) {
     }
 }
 
+function* workFetchSubcorpora(action) {
+    try {
+        const response = yield call(apiFetchSubcorpora, action.payload);
+        yield put(fetchSubcorporaSuccess(response.data));
+    } catch (error) {
+        yield put(fetchSubcorporaFailure(error.response?.data?.error || 'Помилка завантаження підкорпусів'));
+    }
+}
+
+function* workDeleteSubcorpus(action) {
+    try {
+        const { subcorpusId, corpusId } = action.payload;
+        yield call(apiDeleteSubcorpus, subcorpusId);
+        yield put(deleteSubcorpusSuccess());
+        yield put(fetchSubcorporaStart(corpusId));
+    } catch (error) {
+        yield put(deleteSubcorpusFailure(error.response?.data?.error || 'Помилка видалення підкорпусу'));
+    }
+}
+
 // --- WATCHER SAGA ---
 export default function* adminSaga() {
     yield takeLatest(fetchUsersStart.type, workFetchUsers);
@@ -137,4 +128,6 @@ export default function* adminSaga() {
     yield takeLatest(fetchAdminCorporaStart.type, workFetchAdminCorpora);
     yield takeLatest(deleteCorpusStart.type, workDeleteCorpus);
     yield takeLatest(deleteTextStart.type, workDeleteText);
+    yield takeLatest(fetchSubcorporaStart.type, workFetchSubcorpora);
+    yield takeLatest(deleteSubcorpusStart.type, workDeleteSubcorpus);
 }
