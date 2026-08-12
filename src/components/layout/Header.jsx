@@ -10,6 +10,7 @@ const Header = () => {
     const dropdownRef = useRef(null);
     const userRole = localStorage.getItem('user_role');
     const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(userRole);
+    const [showDropdown, setShowDropdown] = useState(false);
 
     const goTo = (path) => {
         navigate(path);
@@ -28,7 +29,6 @@ const Header = () => {
         };
     }, []);
 
-    const isHomePage = location.pathname === '/';
     const isAuthPage = ['/login', '/register'].includes(location.pathname);
     const isLoggedIn = !!localStorage.getItem('access_token');
 
@@ -47,22 +47,19 @@ const Header = () => {
 
             {/* Right side: Actions */}
             <div className="header-right-side">
-                {/* <button className="header-nav-btn">Документація</button>
-                <button className="header-nav-btn">Підтримка</button> */}
-
                 {isLoggedIn ? (
                      !isAuthPage && (
-                        <div style={{ position: 'relative'}}>
+                        <div style={{ position: 'relative'}} ref={dropdownRef}>
                             {isAdmin && (
-                                <button className="header-adminpanel-btn"  onClick={() => goTo('/admin')}>
-                                    <AdminPanelSettingsIcon sx={{  fontSize: 50,  color: 'var(--color-bg-light, #F0ECE1)' }} />
+                                <button className="header-adminpanel-btn" onClick={() => goTo('/admin')}>
+                                    <AdminPanelSettingsIcon sx={{ fontSize: 50, color: 'var(--color-bg-light, #F0ECE1)' }} />
                                 </button>
                             )}
                             <button 
                                 className="header-account-btn" 
                                 onClick={() => goTo('user')}
                             >
-                                <PersonIcon sx={{  fontSize: 70,  color: 'var(--color-bg-light, #F0ECE1)' }} />
+                                <PersonIcon sx={{ fontSize: 70, color: 'var(--color-bg-light, #F0ECE1)' }} />
                             </button>
                         </div>
                      )
