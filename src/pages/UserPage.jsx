@@ -3,6 +3,7 @@ import {
 } from '@mui/material';
 import {useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import './UserPage.css';
 
 
@@ -100,7 +101,7 @@ const UserPage = () => {
     if (!refreshToken) return null;
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/token/refresh/', {
+      const response = await fetch(`${API_URL}/api/auth/token/refresh/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh: refreshToken }),
@@ -122,14 +123,14 @@ const UserPage = () => {
       let token = localStorage.getItem('access_token');
       if (!token) return;
 
-      let response = await fetch('http://localhost:8000/api/auth/profile/', {
+      let response = await fetch(`${API_URL}/api/auth/profile/`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (response.status === 401) {
         token = await refreshAccessToken();
         if (!token) return;
-        response = await fetch('http://localhost:8000/api/auth/profile/', {
+        response = await fetch(`${API_URL}/api/auth/profile/`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
       }
@@ -162,7 +163,7 @@ const UserPage = () => {
     let token = localStorage.getItem('access_token');
 
     const sendRequest = async (authToken) => {
-      return await fetch('http://localhost:8000/api/auth/profile/', {
+      return await fetch(`${API_URL}/api/auth/profile/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -7,7 +7,10 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ARG VITE_API_URL=http://localhost:8000
+# Empty by default: the built app calls same-origin paths, which nginx
+# (see nginx.conf) proxies to the backend over the cluster's internal
+# service network instead of round-tripping through the public ingress.
+ARG VITE_API_URL=""
 ENV VITE_API_URL=${VITE_API_URL}
 RUN npm run build
 
