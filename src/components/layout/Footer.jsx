@@ -1,4 +1,5 @@
 import './Footer.css';
+import TeamLogo from "../../assets/images/footer/team_logo.png";
 
 const Footer = () => {
     return (
@@ -8,7 +9,7 @@ const Footer = () => {
             </span>
 
             <img 
-                src="src/assets/images/footer/team_logo.png" 
+                src={TeamLogo} 
                 alt='Team logo' 
                 className="footer-logo"
             />

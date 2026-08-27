@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PersonIcon from '@mui/icons-material/Person';
 import './Header.css';
+import Logo from "../../assets/images/header/logo.png" ;
 
 const Header = () => {
     const location = useLocation();
@@ -36,7 +37,7 @@ const Header = () => {
         <header className={`header-container ${isAuthPage ? 'header-auth-mode' : ''}`}>
             {/* Left side: Logo */}
             <button className="image-button header-logo-btn" onClick={() => goTo('')} >
-                <img src="/src/assets/images/header/logo.png" alt="Logo" width={91} height={91} />
+                <img src={Logo} alt="Logo" width={91} height={91} />
             </button>
 
             <div style={{ display: 'flex', justifyContent: 'flex-start', alignContent: 'left'}}>
