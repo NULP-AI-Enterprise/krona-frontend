@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: krona-frontend
-          image: ghcr.io/nulp-ai-enterprise/krona-frontend:sha-bf83748
+          image: ghcr.io/nulp-ai-enterprise/krona-frontend:sha-65759b0
           imagePullPolicy: Always
           ports:
             - name: http
