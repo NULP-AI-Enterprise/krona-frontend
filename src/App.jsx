@@ -23,13 +23,23 @@ function App() {
           <Route path="corpus-manager" element={
             <RequireAuth><CorpusManager /></RequireAuth>
           } />
-          <Route path="concordance" element={<Concordance />} />
+          <Route path="concordance" element={
+            <RequireAuth><Concordance /></RequireAuth>
+          } />
           <Route path="register" element={<Register />} />
           <Route path="login" element={<Login />} />
-          <Route path="user" element={<UserPage />} />
-          <Route path="word-lists" element={<WordLists />} />
-          <Route path="keywords" element={<Keywords />} />
-          <Route path="n-grams" element={<NGrams />} />
+          <Route path="user" element={
+            <RequireAuth><UserPage /></RequireAuth>
+          } />
+          <Route path="word-lists" element={
+            <RequireAuth><WordLists /></RequireAuth>
+          } />
+          <Route path="keywords" element={
+            <RequireAuth><Keywords /></RequireAuth>
+          } />
+          <Route path="n-grams" element={
+            <RequireAuth><NGrams /></RequireAuth>
+          } />
           <Route path="admin" element={
             <RequireRole roles={['SUPER_ADMIN', 'ADMIN']}>
               <AdminPanel />
